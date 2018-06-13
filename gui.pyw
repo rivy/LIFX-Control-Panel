@@ -23,6 +23,7 @@ from keypress import Keystroke_Watcher
 from settings import config
 from splashscreen import Splash
 from utils import *
+import color_plots
 
 HEARTBEAT_RATE = 3000  # 3 seconds
 LOGFILE = 'lifx-control-panel.log'
@@ -323,6 +324,8 @@ class LightFrame(ttk.Labelframe):
                                                                                                                   column=1)
         Button(self.special_functions_lf, text="Stop effects", command=self.stop_threads).grid(row=8, column=0)
         self.special_functions_lf.grid(row=6, columnspan=4)
+
+        color_plots.ColorPlot(self, self.hsbk).grid(column=3, row=0, rowspan=100)
 
         # Start update loop
         self.started = True

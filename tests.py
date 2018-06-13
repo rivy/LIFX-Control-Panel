@@ -1,19 +1,35 @@
-import unittest
-from dummy_devices import *
-from gui import Color
 import random
 import string
+import unittest
+
+from dummy_devices import *
+from gui import Color
 
 
-def rand_color():
+def rand_color_hsbk():
     return Color(random.randint(0, 65535),
                  random.randint(0, 65535),
                  random.randint(0, 65535),
                  random.randint(3500, 9000))
 
 
+def rand_color_rgb():
+    return (random.randint(0, 255),
+            random.randint(0, 255),
+            random.randint(0, 255))
+
+
 def rand_string(n):
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=n))
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=n))
+
+
+class TestUtil(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_hsbk_to_rgb(self):
+        randhsbk = rand_color_hsbk()
+        # TODO Finish this once I find a reliable HSBK <-> RGB mapping
 
 
 class TestLAN(unittest.TestCase):
@@ -28,7 +44,7 @@ class TestLAN(unittest.TestCase):
             self.assertIn(label, self.lifx.devices.keys())
 
     def test_set_color_all_lights(self):
-        color = rand_color()
+        color = rand_color_hsbk()
         print("Rand color is:", color)
         self.lifx.set_color_all_lights(color)
         for device in self.lifx.get_devices_by_names(self.light_labels):
@@ -78,8 +94,8 @@ class TestBulb(unittest.TestCase):
         self.assertEqual(self.bulb.get_power(), False, 'Reset to off')
 
     def test_color_duration(self):
-        color_a = rand_color()
-        color_b = rand_color()
+        color_a = rand_color_hsbk()
+        color_b = rand_color_hsbk()
         self.bulb.set_color(color_a)
         self.assertEqual(self.bulb.get_color(), color_a, "bulb init color")
         duration = random.randint(1, 5)

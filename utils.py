@@ -1,7 +1,7 @@
-from functools import lru_cache
-from math import log, floor
 import os
 import sys
+from functools import lru_cache
+from math import log, floor
 from typing import Union, Tuple
 
 from desktopmagic.screengrab_win32 import *
