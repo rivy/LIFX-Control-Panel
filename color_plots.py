@@ -36,7 +36,7 @@ class ColorPlot(tk.Canvas):
     """Based on https://matplotlib.org/gallery/user_interfaces/embedding_in_tk_canvas_sgskip.html"""
 
     def __init__(self, master, color_hsbk):
-        super().__init__(master=master, width=300, height=400)
+        super().__init__(master=master, width=500, height=400)
         self.parameters_dict = {0: "hue",
                                 1: "saturation",
                                 2: "brightness",
@@ -46,10 +46,8 @@ class ColorPlot(tk.Canvas):
         # Create containers for values
         self.figs = {}
         self.subplots = {}
-        self.plots = {}
         self.lines = {}
         self.fig_photos = {}
-        self.animations = {}
 
         # Create the axes
         self.plot_length = 100
@@ -60,7 +58,7 @@ class ColorPlot(tk.Canvas):
             self.values[parameter].put(self.hsbk[idx].get())
 
             # Create the figure we desire to add to an existing canvas
-            self.figs[parameter] = plt.figure(figsize=(2, 1))
+            self.figs[parameter] = plt.figure(figsize=(5, 1))
             self.subplots[parameter] = self.figs[parameter].add_subplot(1, 1, 1)
             self.lines[parameter], = self.subplots[parameter].plot(self.HSBKx, self.values[parameter])
             if parameter == 'kelvin':

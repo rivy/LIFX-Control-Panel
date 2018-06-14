@@ -325,7 +325,8 @@ class LightFrame(ttk.Labelframe):
         Button(self.special_functions_lf, text="Stop effects", command=self.stop_threads).grid(row=8, column=0)
         self.special_functions_lf.grid(row=6, columnspan=4)
 
-        color_plots.ColorPlot(self, self.hsbk).grid(column=3, row=0, rowspan=100)
+        self.graph_frame = Toplevel(self)
+        color_plots.ColorPlot(self.graph_frame, self.hsbk).grid(row=0, column=0)
 
         # Start update loop
         self.started = True
