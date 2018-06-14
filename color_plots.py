@@ -2,7 +2,6 @@ import tkinter as tk
 from collections import deque
 
 from matplotlib import pyplot as plt
-import matplotlib.animation as animation
 import matplotlib.backends.tkagg as tkagg
 import numpy as np
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -34,7 +33,7 @@ class FILOQueue:
 
 
 class ColorPlot(tk.Canvas):
-    """https://matplotlib.org/gallery/user_interfaces/embedding_in_tk_canvas_sgskip.html"""
+    """Based on https://matplotlib.org/gallery/user_interfaces/embedding_in_tk_canvas_sgskip.html"""
 
     def __init__(self, master, color_hsbk):
         super().__init__(master=master, width=300, height=400)
@@ -64,18 +63,17 @@ class ColorPlot(tk.Canvas):
             self.figs[parameter] = plt.figure(figsize=(2, 1))
             self.subplots[parameter] = self.figs[parameter].add_subplot(1, 1, 1)
             self.lines[parameter], = self.subplots[parameter].plot(self.HSBKx, self.values[parameter])
-
+            if parameter == 'kelvin':
+                self.subplots[parameter].set_ylim(ymax=9000, ymin=0)
+            else:
+                self.subplots[parameter].set_ylim(ymax=65535, ymin=0)
             # Keep this handle alive, or else figure will disappear
             fig_x, fig_y = self.plot_length, self.plot_length
-            self.fig_photos[parameter] = self.draw_figure(self.figs[parameter], loc=(fig_x, fig_y * idx + 5))
-
-            self.animations[parameter] = animation.FuncAnimation(self.figs[parameter],
-                                                                 lambda *_, var=idx, self=self: self.update_plot(var),
-                                                                 blit=False)
+            self.fig_photos[parameter] = self.draw_figure(self.figs[parameter], loc=(fig_x, fig_y * idx))
 
         # Trace variable changes
-        # for idx, parameter in self.parameters_dict.items():
-        #   self.hsbk[idx].trace('w', lambda *_, var=idx, self=self: self.update_plot(var))
+        for idx, parameter in self.parameters_dict.items():
+            self.after(500, lambda *_, var=idx, self=self: self.update_plot(var))
 
     def draw_figure(self, figure, loc=(0, 0)):
         figure_canvas_agg = FigureCanvasAgg(figure)
@@ -95,7 +93,10 @@ class ColorPlot(tk.Canvas):
         return photo
 
     def update_plot(self, param_id: int):
-        print('updatin')
         parameter: str = self.parameters_dict[param_id]
         self.values[parameter].put(self.hsbk[param_id].get())
-        self.lines[parameter].set_data(self.HSBKx, self.values[parameter])
+        self.lines[parameter].set_ydata(self.values[parameter])
+        fig_x, fig_y = self.plot_length, self.plot_length
+        self.fig_photos[parameter] = self.draw_figure(self.figs[parameter], loc=(fig_x, fig_y * param_id))
+        self.figs[parameter].canvas.draw()
+        self.after(500, lambda *_, var=param_id, self=self: self.update_plot(var))
