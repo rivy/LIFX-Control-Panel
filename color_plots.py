@@ -91,10 +91,11 @@ class ColorPlot(tk.Canvas):
         return photo
 
     def update_plot(self, param_id: int):
-        parameter: str = self.parameters_dict[param_id]
-        self.values[parameter].put(self.hsbk[param_id].get())
-        self.lines[parameter].set_ydata(self.values[parameter])
-        fig_x, fig_y = self.plot_length, self.plot_length
-        self.fig_photos[parameter] = self.draw_figure(self.figs[parameter], loc=(fig_x, fig_y * param_id))
-        self.figs[parameter].canvas.draw()
+        if self.master.started:
+            parameter: str = self.parameters_dict[param_id]
+            self.values[parameter].put(self.hsbk[param_id].get())
+            self.lines[parameter].set_ydata(self.values[parameter])
+            fig_x, fig_y = self.plot_length, self.plot_length
+            self.fig_photos[parameter] = self.draw_figure(self.figs[parameter], loc=(fig_x, fig_y * param_id))
+            self.figs[parameter].canvas.draw()
         self.after(500, lambda *_, var=param_id, self=self: self.update_plot(var))

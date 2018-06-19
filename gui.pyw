@@ -122,6 +122,11 @@ class LifxFrame(ttk.Frame):
         if len(self.lightsdict):  # if any lights are found, show the first display
             self.change_dropdown()
         self.after(HEARTBEAT_RATE, self.update_icons)
+        self.update()
+        self.update_idletasks()
+        self.bulb_icons.config(width=self.winfo_width())
+        self.bulb_icons.canvas.config(width=self.winfo_width())
+
 
     def change_dropdown(self, *args):
         """ Change current display frame when dropdown menu is changed. """
@@ -325,8 +330,8 @@ class LightFrame(ttk.Labelframe):
         Button(self.special_functions_lf, text="Stop effects", command=self.stop_threads).grid(row=8, column=0)
         self.special_functions_lf.grid(row=6, columnspan=4)
 
-        self.graph_frame = Toplevel(self)
-        color_plots.ColorPlot(self.graph_frame, self.hsbk).grid(row=0, column=0)
+        self.graphs = color_plots.ColorPlot(self, self.hsbk)
+        self.graphs.grid(column=10, row=0, rowspan=100)
 
         # Start update loop
         self.started = True
@@ -491,7 +496,7 @@ class LightFrame(ttk.Labelframe):
 
 class BulbIconList(Frame):
     def __init__(self, *args):
-        self.window_width = 285
+        self.window_width = 255
         self.icon_width = 50
         self.icon_height = 75
         super().__init__(*args, width=self.window_width, height=self.icon_height)
