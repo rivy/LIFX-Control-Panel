@@ -8,6 +8,7 @@ from tkinter import messagebox
 from tkinter import ttk
 from tkinter.colorchooser import *
 from win32gui import GetCursorPos
+import re
 
 from PIL import Image as pImage
 from lifxlan import *
@@ -242,12 +243,46 @@ class LightFrame(ttk.Labelframe):
                      IntVar(self, init_color.kelvin, "Kelvin"))
         for i in self.hsbk:
             i.trace('w', self.set_bulb_updated)
-        self.hsbk_labels = (
-            Label(self, text='%.3g' % (360 * (self.hsbk[0].get() / 65535))),
-            Label(self, text=str('%.3g' % (100 * self.hsbk[1].get() / 65535)) + "%"),
-            Label(self, text=str('%.3g' % (100 * self.hsbk[2].get() / 65535)) + "%"),
-            Label(self, text=str(self.hsbk[3].get()) + " K")
+
+        def validate_entry(id):
+            val = self.hsbk_entries[id].get()
+            val = int(re.sub('[!@#$%^&*_]', '', val))
+            if id == 0:
+                self.hsbk[0].set((val / 360) * 65535)
+            elif id == 1:
+                self.hsbk[1].set((val / 100) * 65535)
+            elif id == 2:
+                self.hsbk[2].set((val / 100) * 65535)
+            elif id == 3:
+                self.hsbk[3].set(val)
+            else:
+                raise Exception("id out of bounds")
+
+        self.hsbk_entries = (
+            Entry(self, validatecommand=lambda *_: validate_entry(0), width=7),
+            Entry(self, validatecommand=lambda *_: validate_entry(1), width=7),
+            Entry(self, validatecommand=lambda *_: validate_entry(2), width=7),
+            Entry(self, validatecommand=lambda *_: validate_entry(3), width=7)
         )
+
+        def format_hsbk(id, *args):
+            self.hsbk_entries[id].delete(0, END)
+            if id == 0:
+                s = '%.3g' % (360 * (self.hsbk[0].get() / 65535))
+            elif id == 1:
+                s = str('%.3g' % (100 * self.hsbk[1].get() / 65535)) + "%"
+            elif id == 2:
+                s = str('%.3g' % (100 * self.hsbk[2].get() / 65535)) + "%"
+            elif id == 3:
+                s = str(self.hsbk[3].get()) + " K"
+            else:
+                raise Exception("Id out of bounds")
+            self.hsbk_entries[id].insert(0, s)
+
+        self.hsbk[0].trace('w', lambda *args: format_hsbk(0))
+        self.hsbk[1].trace('w', lambda *args: format_hsbk(1))
+        self.hsbk[2].trace('w', lambda *args: format_hsbk(2))
+        self.hsbk[3].trace('w', lambda *args: format_hsbk(3))
         self.hsbk_scale = (
             ColorScale(self, to=65535., variable=self.hsbk[0], command=self.update_color_from_ui),
             ColorScale(self, from_=0, to=65535, variable=self.hsbk[1], command=self.update_color_from_ui,
@@ -275,7 +310,7 @@ class LightFrame(ttk.Labelframe):
         for key, scale in enumerate(self.hsbk_scale):
             Label(self, text=self.hsbk[key]).grid(row=key + 1, column=0)
             scale.grid(row=key + 1, column=1)
-            self.hsbk_labels[key].grid(row=key + 1, column=2)
+            self.hsbk_entries[key].grid(row=key + 1, column=2)
             self.hsbk_display[key].grid(row=key + 1, column=3)
 
         self.threads = {}
@@ -378,13 +413,13 @@ class LightFrame(ttk.Labelframe):
     def update_label(self, key):
         """ Update scale labels, formatted accordingly. """
         if key == 0:  # H
-            self.hsbk_labels[0].config(text=str('%.3g' % (360 * (self.hsbk[0].get() / 65535))))
+            self.hsbk_entries[0].config(text=str('%.3g' % (360 * (self.hsbk[0].get() / 65535))))
         elif key == 1:  # S
-            self.hsbk_labels[1].config(text=str('%.3g' % (100 * (self.hsbk[1].get() / 65535))) + "%")
+            self.hsbk_entries[1].config(text=str('%.3g' % (100 * (self.hsbk[1].get() / 65535))) + "%")
         elif key == 2:  # B
-            self.hsbk_labels[2].config(text=str('%.3g' % (100 * (self.hsbk[2].get() / 65535))) + "%")
+            self.hsbk_entries[2].config(text=str('%.3g' % (100 * (self.hsbk[2].get() / 65535))) + "%")
         elif key == 3:  # K
-            self.hsbk_labels[3].config(text=str(self.hsbk[3].get()) + " K")
+            self.hsbk_entries[3].config(text=str(self.hsbk[3].get()) + " K")
 
     def update_display(self, key):
         hsbk = h, s, b, k = self.get_color_values_hsbk()
