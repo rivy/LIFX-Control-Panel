@@ -246,7 +246,8 @@ class LightFrame(ttk.Labelframe):
 
         def validate_entry(id):
             val = self.hsbk_entries[id].get()
-            val = int(re.sub('[!@#$%^&*_]', '', val))
+            val = re.sub('[!@#$%^&*_]', '', val)
+            val = float(val)
             if id == 0:
                 self.hsbk[0].set((val / 360) * 65535)
             elif id == 1:
@@ -259,25 +260,27 @@ class LightFrame(ttk.Labelframe):
                 raise Exception("id out of bounds")
 
         self.hsbk_entries = (
-            Entry(self, validatecommand=lambda *_: validate_entry(0), width=7),
-            Entry(self, validatecommand=lambda *_: validate_entry(1), width=7),
-            Entry(self, validatecommand=lambda *_: validate_entry(2), width=7),
-            Entry(self, validatecommand=lambda *_: validate_entry(3), width=7)
+            Entry(self, validatecommand=lambda *_: validate_entry(0), validate='focusout', width=7),
+            Entry(self, validatecommand=lambda *_: validate_entry(1), validate='focusout', width=7),
+            Entry(self, validatecommand=lambda *_: validate_entry(2), validate='focusout', width=7),
+            Entry(self, validatecommand=lambda *_: validate_entry(3), validate='focusout', width=7)
         )
 
-        def format_hsbk(id, *args):
-            self.hsbk_entries[id].delete(0, END)
-            if id == 0:
-                s = '%.3g' % (360 * (self.hsbk[0].get() / 65535))
-            elif id == 1:
-                s = str('%.3g' % (100 * self.hsbk[1].get() / 65535)) + "%"
-            elif id == 2:
-                s = str('%.3g' % (100 * self.hsbk[2].get() / 65535)) + "%"
-            elif id == 3:
-                s = str(self.hsbk[3].get()) + " K"
-            else:
-                raise Exception("Id out of bounds")
-            self.hsbk_entries[id].insert(0, s)
+        def format_hsbk(id):
+            root = self.master.master
+            if root.focus_get() != self.hsbk_entries[id]:
+                self.hsbk_entries[id].delete(0, END)
+                if id == 0:
+                    s = '%.3g' % (360 * (self.hsbk[0].get() / 65535))
+                elif id == 1:
+                    s = str('%.3g' % (100 * self.hsbk[1].get() / 65535)) + "%"
+                elif id == 2:
+                    s = str('%.3g' % (100 * self.hsbk[2].get() / 65535)) + "%"
+                elif id == 3:
+                    s = str(self.hsbk[3].get()) + " K"
+                else:
+                    raise Exception("Id out of bounds")
+                self.hsbk_entries[id].insert(0, s)
 
         self.hsbk[0].trace('w', lambda *args: format_hsbk(0))
         self.hsbk[1].trace('w', lambda *args: format_hsbk(1))
